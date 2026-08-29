@@ -15,10 +15,19 @@ const protect = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
+    req.userRole = decoded.role;
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Not authorized, invalid token' });
   }
 };
+const requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.userRole)) {
+      return res.status(403).json({ message: 'Access denied for this role' });
+    }
+    next();
+  };
+};
 
-module.exports = protect;
+module.exports = { protect, requireRole };
